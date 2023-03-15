@@ -10,7 +10,7 @@
             <canvas class = "gameCanvas" id="canvas" width="1000" height="700" style ="border:10px solid black;">
                 Your browser does not support the HTML5 canvas tag.
             </canvas>
-            <button id = "startButton" class = "start">Start</button>
+            <button id = "startButton" class = "start" onClick="init()">Start</button>
         </div>
         
     </body>
@@ -18,10 +18,93 @@
 
 <script>
 
+var startButton = document.getElementById("startButton")
+let movement;
+window.onload = init
+playerx = 100
+playery = 580
+xvector = 0
+yvector = 0
+floor = 'green'
 
-
-
-
-
+function init(){
     
+canvas = document.getElementById("canvas")
+context = canvas.getContext('2d')
+startButton.style.display ="none" // hides button, to show use 'block' instead of none
+draw()
+
+}
+
+function draw(){
+    context.fillStyle = '#4CC1FF'
+    context.fillRect(0,0,canvas.width,canvas.height)
+    
+    context.fillStyle = 'white'   //creating player
+    context.fillRect(playerx,playery,40,100)
+
+    context.fillStyle = floor //creating floor
+    context.fillRect(0,680,canvas.width,50)
+    var pixelBelow = context.getImageData(playerx,playery + 101,1,1)
+    //console.log(pixelBelow)
+    gameloop()
+}
+function gameloop(){
+    playery = yvector + playery
+    playerx = xvector + playerx
+    requestAnimationFrame(draw)
+    
+}
+document.addEventListener('keydown', (event) =>{
+    switch(event.keyCode){
+        case 65: //a
+            movement = "left"
+            playerx = playerx -8
+        break;
+
+        case 68: //d
+            movement = "right"
+            playerx = playerx + 8
+        break;
+
+        case 32: //spacebar
+            yvector = -15
+            
+            setTimeout(jump,20)
+            
+        break;
+
+    }
+}
+)   
+window.addEventListener("gamepadconnected", (e) => {
+  const gp = navigator.getGamepads()[e.gamepad.index];
+  pressedButton = navigator.getGamepads() //get gamepad objects || use .axis for analog sticks and .buttons for buttons
+  console.log(
+    "Gamepad connected at index %d: %s. %d buttons, %d axes.",
+    gp.index, //integer unique for each controller connected to system
+    gp.id, //string contaning information about controller
+    gp.buttons.length, //buttons 
+    gp.axes.length)
+    //to check if a button is pressed: GamepadButton.pressed
+    if(gp){
+        console.log(gp[0].axis)
+    }
+  ;
+});
+
+function jump(){
+
+    if(pixelBelow[1] != 255){
+        alert("hi")
+        yvector = 4
+    } else if(pixelBelow[1] == 255){
+        yvector = 0
+    }
+    
+    
+
+}
+
+
 </script>

@@ -19,7 +19,7 @@ h1 {
 }
 #startButton {
     margin-right: 100px;
-    /* align-self: center; */
+    margin-left: 315px;
     height: 100px;
     border: 1px solid #3498db;
     background: none;
