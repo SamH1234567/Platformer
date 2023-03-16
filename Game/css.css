@@ -1,19 +1,26 @@
-
+body{
+    margin: 0px;
+    padding: 0px;
+    position: fixed;
+}
 h1 {
+    font-size: 50px;
+    font-family:"montserrat";
+    margin: 0px;
+    padding: 0px;
     text-align: center;
+    background-color: #3498db;
 } 
 
 .gameCanvas {
-    height: 100%;
-    width: 100%;
-    position: relative;
     
+    position: relative;
+    background-color: #3498db;
     
 }
 #container {
     margin: auto;
-    height: 700px;
-    width: 1000px;
+    
     
 
 }

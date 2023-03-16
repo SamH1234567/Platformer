@@ -3,68 +3,140 @@
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="css.css" />
-        <h1>Platformer</h1>
+        
     </head>
     <body>
         <div id = "container">
-            <canvas class = "gameCanvas" id="canvas" width="1000" height="700" style ="border:10px solid black;">
+            <h1>Platformer</h1>
+            <canvas class = "gameCanvas" id="canvas" >
                 Your browser does not support the HTML5 canvas tag.
             </canvas>
-            <button id = "startButton" class = "start" onClick="init()">Start</button>
+            
+            <button style.display = "block" id = "startButton" class = "start" onClick="init()">Start</button>
         </div>
         
     </body>
 </html>
 
 <script>
-
+canvas = document.getElementById("canvas")
+context = canvas.getContext('2d')
 var startButton = document.getElementById("startButton")
 let movement;
 window.onload = init
-playerx = 100
-playery = 580
-xvector = 0
-yvector = 0
-floor = 'green'
+pixelBelow = []
+playerX = 500
+playerY = 660
+playerWidth = 40
+playerHeight = 100
+velocity = 10
+floorColour = 'green'
+floorHeight = 50
+onGround = null
 
+const friction = 1
+
+controllerIndex = null;
+let leftPressed = false
+let rightPressed = false
+let aPressed = false
 function init(){
-    
-canvas = document.getElementById("canvas")
-context = canvas.getContext('2d')
-startButton.style.display ="none" // hides button, to show use 'block' instead of none
-draw()
 
+    startButton.style.display ="none" // hides button, to show use 'block' instead of none
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    rightBoundary = canvas.width - playerWidth
+
+draw()
 }
 
-function draw(){
-    context.fillStyle = '#4CC1FF'
-    context.fillRect(0,0,canvas.width,canvas.height)
-    
-    context.fillStyle = 'white'   //creating player
-    context.fillRect(playerx,playery,40,100)
+    window.addEventListener("resize",init)
+    window.addEventListener("gamepadconnected", (event)=> {
+    controllerIndex = event.gamepad.index
+    console.log('connected')
+})
 
-    context.fillStyle = floor //creating floor
-    context.fillRect(0,680,canvas.width,50)
-    var pixelBelow = context.getImageData(playerx,playery + 101,1,1)
+window.addEventListener("gamepaddisconnected", (event)=> {
+    controllerIndex = null
+})
+function draw(){
     //console.log(pixelBelow)
     gameloop()
 }
+
 function gameloop(){
-    playery = yvector + playery
-    playerx = xvector + playerx
+    clearScreen()
+    drawPlayer()
+    controllerInput()
+    updatePlayer()
     requestAnimationFrame(draw)
+    }
+    
+function controllerInput(){
+    if(controllerIndex !== null){
+        gamepad = navigator.getGamepads()[controllerIndex]
+        console.log(gamepad)
+        buttons = gamepad.buttons
+        aPressed = buttons[0].pressed //a
+        axes = gamepad.axes
+
+        rightStick = gamepad.axes[2,3] // 2: horizontal, 3: vertical
+        leftRightValue = gamepad.axes[0] //left stick || 0: horizontal, 1: vertical
+        const stickDeadZone = 0.4
+
+        if (leftRightValue >= stickDeadZone){
+            rightPressed = true
+        } else if (leftRightValue <= -stickDeadZone){
+            leftPressed = true
+        }
+        
+    }
+}
+
+function updatePlayer(pixelBelow){
+    var pixelBelow = context.getImageData(playerX,playerY + 101,1,1)
+    if(aPressed){
+        jump(pixelBelow)
+        //playerY = playerY - velocity //insert suvat/gravity/jump function
+    }
+    if(playerX !== 0){
+    if(leftPressed){
+        playerX = playerX - velocity
+        leftPressed = false
+    }}
+    if(playerX < rightBoundary){
+    if(rightPressed){
+        playerX = playerX + velocity
+        rightPressed = false
+    }
+    }
+}
+
+function clearScreen(){
+    context.fillStyle = '#4CC1FF' //background
+    context.fillRect(0,0, canvas.width, canvas.height)
+    context.fillStyle = floorColour //creating floor
+    context.fillRect(0,canvas.height-80,canvas.width,floorHeight)
+}
+
+function drawPlayer(){
+    context.fillStyle = 'white'   //creating player
+    context.fillRect(playerX,playerY,playerWidth,playerHeight)
     
 }
+
+
+
 document.addEventListener('keydown', (event) =>{
     switch(event.keyCode){
         case 65: //a
             movement = "left"
-            playerx = playerx -8
+            playerX = playerX -8
         break;
 
         case 68: //d
             movement = "right"
-            playerx = playerx + 8
+            playerX = playerX + 8
         break;
 
         case 32: //spacebar
@@ -77,29 +149,21 @@ document.addEventListener('keydown', (event) =>{
     }
 }
 )   
-window.addEventListener("gamepadconnected", (e) => {
-  const gp = navigator.getGamepads()[e.gamepad.index];
-  pressedButton = navigator.getGamepads() //get gamepad objects || use .axis for analog sticks and .buttons for buttons
-  console.log(
-    "Gamepad connected at index %d: %s. %d buttons, %d axes.",
-    gp.index, //integer unique for each controller connected to system
-    gp.id, //string contaning information about controller
-    gp.buttons.length, //buttons 
-    gp.axes.length)
-    //to check if a button is pressed: GamepadButton.pressed
-    if(gp){
-        console.log(gp[0].axis)
+
+function jump(pixelBelow){
+    alert(pixelBelow)
+    if(pixelBelow[1] == 255){
+        onGround = true
     }
-  ;
-});
-
-function jump(){
-
     if(pixelBelow[1] != 255){
-        alert("hi")
+        alert("can't jump")
+        playerJump = true
+        
+
+    } else if(onGround == true && playerJump == false){
+        alert("jump")
         yvector = 4
-    } else if(pixelBelow[1] == 255){
-        yvector = 0
+        playerY -= velocity
     }
     
     
