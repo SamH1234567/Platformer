@@ -25,15 +25,16 @@ var startButton = document.getElementById("startButton")
 let movement;
 window.onload = init
 pixelBelow = []
-playerX = 500
-playerY = 660
+u = -20
+a = 1
 playerWidth = 40
 playerHeight = 100
-velocity = 10
+velocity = 28
 floorColour = 'green'
-floorHeight = 50
+floorHeight = 20
 onGround = null
-
+input = false
+playerJump = false
 const friction = 1
 
 controllerIndex = null;
@@ -41,12 +42,12 @@ let leftPressed = false
 let rightPressed = false
 let aPressed = false
 function init(){
-
-    startButton.style.display ="none" // hides button, to show use 'block' instead of none
+    
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
     rightBoundary = canvas.width - playerWidth
-
+    playerX = 500
+    playerY = 250
 draw()
 }
 
@@ -75,7 +76,6 @@ function gameloop(){
 function controllerInput(){
     if(controllerIndex !== null){
         gamepad = navigator.getGamepads()[controllerIndex]
-        console.log(gamepad)
         buttons = gamepad.buttons
         aPressed = buttons[0].pressed //a
         axes = gamepad.axes
@@ -93,30 +93,50 @@ function controllerInput(){
     }
 }
 
-function updatePlayer(pixelBelow){
-    var pixelBelow = context.getImageData(playerX,playerY + 101,1,1)
+function updatePlayer(){
+    
     if(aPressed){
-        jump(pixelBelow)
+        jump()
         //playerY = playerY - velocity //insert suvat/gravity/jump function
     }
-    if(playerX !== 0){
+    if(playerX > 0){
     if(leftPressed){
+        input = true
         playerX = playerX - velocity
         leftPressed = false
-    }}
+    } 
+    }
     if(playerX < rightBoundary){
     if(rightPressed){
+        input = true
         playerX = playerX + velocity
         rightPressed = false
-    }
+    } 
     }
 }
 
 function clearScreen(){
     context.fillStyle = '#4CC1FF' //background
     context.fillRect(0,0, canvas.width, canvas.height)
-    context.fillStyle = floorColour //creating floor
-    context.fillRect(0,canvas.height-80,canvas.width,floorHeight)
+
+    // platforms 
+    context.fillStyle = floorColour //Bottom
+    context.fillRect(canvas.width/2 -200,canvas.height - 160,500,floorHeight)
+
+    context.fillStyle = floorColour //Top Left
+    context.fillRect(100,200,250,floorHeight)
+
+    context.fillStyle = floorColour //Top Right
+    context.fillRect(canvas.width/2 +300,160,200,floorHeight)
+
+    context.fillStyle = floorColour //Top
+    context.fillRect(canvas.width/2 -200,350,400,floorHeight)
+
+    context.fillStyle = floorColour //Mid-Right
+    context.fillRect(canvas.width/2 +300,500,300,floorHeight)
+
+    context.fillStyle = floorColour //Mid-Left
+    context.fillRect(100,550,200,floorHeight)
 }
 
 function drawPlayer(){
@@ -131,44 +151,72 @@ document.addEventListener('keydown', (event) =>{
     switch(event.keyCode){
         case 65: //a
             movement = "left"
-            playerX = playerX -8
+            playerX = playerX - velocity
         break;
-
         case 68: //d
             movement = "right"
-            playerX = playerX + 8
+            playerX = playerX + velocity
         break;
-
         case 32: //spacebar
-            yvector = -15
-            
-            setTimeout(jump,20)
-            
+            jump()
         break;
 
     }
 }
 )   
 
-function jump(pixelBelow){
-    alert(pixelBelow)
-    if(pixelBelow[1] == 255){
+function jump(){
+    pixelBelow = context.getImageData(playerX,playerY + 110,1,1)
+    console.log(pixelBelow)
+    if(pixelBelow.data[0] == 0){
         onGround = true
-    }
-    if(pixelBelow[1] != 255){
-        alert("can't jump")
-        playerJump = true
+        playerJump = false
         
+        
+    }
+        else if(pixelBelow.data[0] != 0){
+        console.log(pixelBelow[0])
+        onGround = false
+        playerJump = true
+    } 
 
-    } else if(onGround == true && playerJump == false){
-        alert("jump")
-        yvector = 4
+    if(onGround == true && playerJump == false){
+        playerJump = true
         playerY -= velocity
+        fall()
+        
+    }
+    else{
+        //alert(pixelBelow.data)
     }
     
     
 
 }
 
+function fall(){
+    pixelBelow = context.getImageData(playerX,playerY + 101,1,1)
+    if(pixelBelow.data[0] !== 0){
+        onGround = false
+    } else{
+        onGround = true
+    }
+    if(onGround == false){
+        playerY = playerY + u
+        //alert(onGround)
+        u = u + a
+        requestAnimationFrame(fall)
+    } 
+    else {
+        //alert(onGround)
+        canJump = true
+        u = -20
+    }
+}
 
+/* Useful Code
+
+startButton.style.display ="none" // hides button, to show use 'block' instead of none
+
+*/
 </script>
