@@ -25,8 +25,8 @@ var startButton = document.getElementById("startButton")
 let movement;
 window.onload = init
 pixelBelow = []
-u = -20
-a = 1
+u = 0
+a = 0.008
 playerWidth = 40
 playerHeight = 100
 velocity = 28
@@ -69,6 +69,9 @@ function gameloop(){
     clearScreen()
     drawPlayer()
     controllerInput()
+    if(pixelBelow[0]!==0){
+        fall()
+    }
     updatePlayer()
     requestAnimationFrame(draw)
     }
@@ -166,51 +169,77 @@ document.addEventListener('keydown', (event) =>{
 )   
 
 function jump(){
-    pixelBelow = context.getImageData(playerX,playerY + 110,1,1)
+    pixelBelow_left = context.getImageData(playerX,playerY + playerHeight,1,1)
+    pixelBelow_right = context.getImageData(playerX + playerWidth, playerY + playerHeight,1,1)
     console.log(pixelBelow)
-    if(pixelBelow.data[0] == 0){
+    if(pixelBelow_left.data[0] == 0 || pixelBelow_right.data[0] == 0){
         onGround = true
         playerJump = false
         
         
     }
-        else if(pixelBelow.data[0] != 0){
-        console.log(pixelBelow[0])
+        else if(pixelBelow_left.data[0] !== 0 && pixelBelow_right.data[0] == 0){
         onGround = false
         playerJump = true
     } 
 
     if(onGround == true && playerJump == false){
         playerJump = true
-        playerY -= velocity
+        
+        u = -2
         fall()
         
     }
     else{
         //alert(pixelBelow.data)
     }
-    
-    
-
 }
 
 function fall(){
     pixelBelow = context.getImageData(playerX,playerY + 101,1,1)
-    if(pixelBelow.data[0] !== 0){
-        onGround = false
-    } else{
-        onGround = true
+    pixelAhead = context.getImageData(playerX + velocity, playerY + 101 + u,1,1)
+    
+    if(u>0){
+        for(i = playerY + 101; i< playerY +101 + u; i++){
+            pixelBelow = context.getImageData(playerX,i,1,1)
+            if(pixelBelow.data[0] == 0){
+                onGround = true
+            } else{
+                onGround = false
+                
+        }
     }
-    if(onGround == false){
+    }else{
+        for(i = playerY +101; i> playerY +101 + u; i--){ 
+        pixelBelow = context.getImageData(playerX,i,1,1)
+        if(pixelBelow.data[0] == 0){
+            onGround = true
+        } else{
+            onGround = false
+        
+        }
+    } 
+    }
+    /*if(pixelBelow.data[0] !== 0 && pixelAhead.data[0] !== 0){
+        
+        onGround = false
+        
+    } else if(pixelBelow.data[0] == 0 && pixelAhead.data[0]== 0){
+        onGround = true
+        
+    }*/
+    if(onGround == false || playerJump == true){
+        console.log(u)
         playerY = playerY + u
-        //alert(onGround)
         u = u + a
+        playerJump = false
         requestAnimationFrame(fall)
     } 
-    else {
+    else if(onGround == true){
         //alert(onGround)
         canJump = true
-        u = -20
+        playerJump = false
+        
     }
 }
 
